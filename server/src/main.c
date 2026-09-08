@@ -10,6 +10,11 @@ enum INFOMESSAGE
 
 int main()
 {
-	if (stdin)
+	{
+		size_t buffer[256*1024];
+		if (fread(buffer,1,sizeof(buffer),stdin)) {
+
+		}
+	}
 
 }
