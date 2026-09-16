@@ -10,9 +10,18 @@ enum INFOMESSAGE
 
 int main()
 {
+	load_config();
+	read_data();
+	save_data_to_disk();
+	check_data();
+	read_meta_data_from_file();
+	notify_target_client();
+
+
 	{
 		size_t buffer[256*1024];
 		if (fread(buffer,1,sizeof(buffer),stdin)) {
+
 			//Firstly,read the bytes to buffer
 			//1.1,recognise which client sent it,every client should register itself by the api /regiser,then allocate a uuid to the client
 			//1.2 GET the file by the api /push_file
