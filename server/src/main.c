@@ -7,11 +7,15 @@ enum INFOMESSAGE
 {
 	START_MSG, IN_PROGRESS_MSG, END_MSG
 };
-
+enum ACCRPT_DATA_RESULT
+{
+	SUCCESS,NET_ERR,DISK_ERR,UNKNOWN_ERR
+};
+enum ACCRPT_DATA_RESULT accept_data();
 int main()
 {
 	load_config();
-	read_data();
+	accept_data();
 	save_data_to_disk();
 	check_data();
 	read_meta_data_from_file();
@@ -41,3 +45,8 @@ int main()
 	//File updating bases on mtime
 	//client will pull data from server when: 1.periodic polling every 5 min 2.received server's notify
 	//Client must receive a message from server to regard the file sync as success.
+enum ACCRPT_DATA_RESULT accept_data()
+{
+	read_notify;
+	compare_mtime;
+}
