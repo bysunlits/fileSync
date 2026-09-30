@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(file_sync_server C)
+project(file_sync_server)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_EXTENSIONS ON)
 
@@ -10,6 +10,7 @@ add_executable(file_sync_server
         src/base/hld_err.c
         src/base/hld_err.h
         src/read_data/acpt_data.h
+        src/read_data/merkle_tree.h
 )
 
 target_include_directories(file_sync_server PRIVATE

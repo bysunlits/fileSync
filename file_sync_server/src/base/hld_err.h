@@ -13,4 +13,4 @@ typedef struct ERR_INFO
 	char *MESSAGE;
 }ERR_INFO;
 
-int hld_err(ERR_INFO **ERR_PTR,const char *message,const int *err_code);
+int hld_err(ERR_INFO **ERR_PTR,const char *message,const int err_code);
