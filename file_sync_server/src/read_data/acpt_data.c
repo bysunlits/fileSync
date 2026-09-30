@@ -1,6 +1,7 @@
 //
 // Created by sunlit on 2026/9/29.
 //
+
 enum INFOMESSAGE
 {
 	START_MSG, IN_PROGRESS_MSG, END_MSG
