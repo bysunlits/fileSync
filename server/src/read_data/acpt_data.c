@@ -1,31 +1,66 @@
 //
 // Created by sunlit on 2026/9/29.
 //
-
-typedef struct MerkleTree
+enum INFOMESSAGE
 {
-	void (*left_node)(struct MerkleTree *self);
-	void (*right_node)(struct MerkleTree *self);
-}MerkleTree;
-
-
-MerkleTree metainfo_deal()
+	START_MSG, IN_PROGRESS_MSG, END_MSG
+};
+typedef enum
 {
-	deal_notify();
-	build_recv_info();
-}
+	ACPT_SUCCESS,NET_ERR,DISK_ERR,UNKNOWN_ERR
+}ACCEPT_DATA_RESULT;
 
+ACCEPT_DATA_RESULT accept_data();
 
-ACCEPT_DATA_RESULT accept_data()
+typedef enum
 {
-	MerkleTree hash_tree=metainfo_deal();
-	recv_chunk(hash_tree);
-}
+	HLD_SUCCESS
+}HLD_HEAD_RET;
+
+HLD_HEAD_RET hdl_head();
+
+MerkleTree metainfo_deal();
+
+void recv_chunk(MerkleTree hash_tree);
 
 typedef enum
 {
 	FAIL_RECV,ERR_PKG
 }RECV_RESULT;
+
+RECV_RESULT rd_to_buffer();
+
+
+
+
+ACCEPT_DATA_RESULT acpt_data()
+{
+	MerkleTree hash_tree=metainfo_deal();
+	recv_chunk(hash_tree);
+}
+
+void recv_chunk(MerkleTree hash_tree)
+{
+	HLD_HEAD_RET ret=hdl_head();
+	if(ret==HLD_SUCCESS)
+	{
+		RECV_RESULT result=rd_to_buffer();
+		if (result==FAIL_RECV)
+		{
+			try2reconnect();
+		}
+		else if (result=ERR_PKG)
+		{
+			resend();
+		}
+	}
+	else
+	{
+		goto cleanup;
+	}
+cleanup:
+}
+
 
 RECV_RESULT rd_to_buffer()
 {
@@ -38,22 +73,11 @@ RECV_RESULT rd_to_buffer()
 }
 
 
-void recv_chunk(MerkleTree hash_tree)
-{
-	HLD_HEAD_RET ret=hdl_head();
-	if(ret==HLD_SUCCESS)
-	{
-		RECV_RESULT result=rd_to_buffer();
-		if (result==FAIL_RECV)
-		{
-			resend();
-		}
-		else if (result=ERR_PKG)
-			set_buffer_to_tmpfile();
 
-	}
-	else
-	{
-		proc_hld_err(ret);
-	}
+MerkleTree metainfo_deal()
+{
+	deal_notify();
+	build_recv_info();
 }
+
+

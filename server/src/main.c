@@ -2,6 +2,7 @@
 // Created by bysunlits on 2026/9/6.
 //
 #include <stdio.h>
+#include "read_data/acpt_data.h"
 /*
 # 文件同步系统 — 架构设计说明
 
@@ -61,28 +62,11 @@
 - 不做：逻辑时钟。
 - 当前形态：非端到端加密（TLS 在 Nginx 终止）。
 */
-enum INFOMESSAGE
-{
-	START_MSG, IN_PROGRESS_MSG, END_MSG
-};
-typedef enum
-{
-	ACPT_SUCCESS,NET_ERR,DISK_ERR,UNKNOWN_ERR
-}ACCEPT_DATA_RESULT;
-
-ACCEPT_DATA_RESULT accept_data();
-
-typedef enum
-{
-	HLD_SUCCESS
-}HLD_HEAD_RET;
-
-HLD_HEAD_RET hdl_head();
 
 int main()
 {
 	load_config();
-	accept_data();
+	acpt_data();
 	rd_meta_data_from_file();
 	notify_target_client();
 
