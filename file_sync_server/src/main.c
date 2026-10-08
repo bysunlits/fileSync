@@ -2,6 +2,9 @@
 // Created by bysunlits on 2026/9/6.
 //
 #include <stdio.h>
+#include <utils/log_sinker.h>
+#include "logger/logger.h"
+
 #include "read_data/acpt_data.h"
 /*
 # 文件同步系统 — 架构设计说明
@@ -63,19 +66,36 @@
 - 当前形态：非端到端加密（TLS 在 Nginx 终止）。
 */
 
-int main()
-{
-	load_config();
-	acpt_data();
-	rd_meta_data_from_file();
-	notify_target_client();
+int main(void) {
+	log_set_level(LOG_LEVEL_DEBUG);
+
+	// 文件日志输出
+	// FILE *log_file = fopen("app.log", "a");
+	// if (log_file)
+	// {
+	// 	log_set_sink(file_sink, log_file);
+	// }
+	// if (log_file) {
+	// 	fclose(log_file);
+	// }
+	log_set_sink(console_sink,NULL);
 
 
-	{
-		size_t buffer[256*1024];
-		if (fread(buffer,1,sizeof(buffer),stdin)) {
-
-		}
-	}
-
+	return 0;
 }
+// int main()
+// {
+// 	load_config();
+// 	acpt_data();
+// 	rd_meta_data_from_file();
+// 	notify_target_client();
+//
+//
+// 	{
+// 		size_t buffer[256*1024];
+// 		if (fread(buffer,1,sizeof(buffer),stdin)) {
+//
+// 		}
+// 	}
+//
+// }

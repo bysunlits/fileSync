@@ -3,7 +3,7 @@
 #include <uchar.h>
 #include "base/hld_err.h"
 
-int sha256_in_stream(const char *data_in,unsigned char *hash,size_t data_size,ERR_INFO *err);
+int sha256_in_stream(const char *data_in,char *hash,size_t data_size,ERR_INFO *err);
 
 typedef struct MerkleTree
 {
@@ -21,3 +21,5 @@ typedef struct Node
 	void (*node_default)(struct Node *self);
 	void (*node_with_args)(struct Node *self,char32_t nd_parent,char32_t nd_left,char32_t nd_right);
 }Node;
+
+void bytes_to_hex(const unsigned char *bin, unsigned int bin_len, char *hex);

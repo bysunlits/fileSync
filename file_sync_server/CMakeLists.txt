@@ -6,11 +6,15 @@ set(CMAKE_C_EXTENSIONS ON)
 add_executable(file_sync_server
         src/main.c
         src/read_data/merkle_tree.c
+        src/read_data/merkle_tree.h
         src/read_data/acpt_data.c
+        src/read_data/acpt_data.h
         src/base/hld_err.c
         src/base/hld_err.h
-        src/read_data/acpt_data.h
-        src/read_data/merkle_tree.h
+        src/logger/logger.c
+        src/logger/logger.h
+        src/utils/log_sinker.c
+        src/utils/log_sinker.h
 )
 
 target_include_directories(file_sync_server PRIVATE
