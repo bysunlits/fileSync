@@ -5,10 +5,6 @@
 #ifndef FILESYNC_ACPT_DATA_H
 #define FILESYNC_ACPT_DATA_H
 
+class acpt_data {};
 
-class acpt_data
-{
-};
-
-
-#endif //FILESYNC_ACPT_DATA_H
+#endif // FILESYNC_ACPT_DATA_H

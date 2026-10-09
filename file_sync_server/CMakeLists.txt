@@ -11,8 +11,8 @@ add_executable(file_sync_server
         src/read_data/acpt_data.h
         src/base/hld_err.c
         src/base/hld_err.h
-        src/logger/logger.c
-        src/logger/logger.h
+        libs/logger/logger.c
+        libs/logger/logger.h
         src/utils/log_sinker.c
         src/utils/log_sinker.h
 )
@@ -20,5 +20,6 @@ add_executable(file_sync_server
 target_include_directories(file_sync_server PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/logger
 )
 

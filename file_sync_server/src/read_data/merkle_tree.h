@@ -1,25 +1,18 @@
 #pragma once
+#include "base/hld_err.h"
 #include <stddef.h>
 #include <uchar.h>
-#include "base/hld_err.h"
+#define LOG_MODULE "read_data"
+#include "logger.h"
 
-int sha256_in_stream(const char *data_in,char *hash,size_t data_size,ERR_INFO *err);
+typedef struct MerkleTree {
+	unsigned char root_node[65];
+} MerkleTree;
 
-typedef struct MerkleTree
-{
-	char32_t root_node;
+int node_default(unsigned char *block, size_t data_size);
 
-	void (*left_node)(struct MerkleTree *self);
-	void (*right_node)(struct MerkleTree *self);
-}MerkleTree;
+struct Node* node_with_args(unsigned char *nd_left,unsigned char *nd_right);
 
-typedef struct Node
-{
-	char hash[16];
-	char left[16];
-	char right[16];
-	void (*node_default)(struct Node *self);
-	void (*node_with_args)(struct Node *self,char32_t nd_parent,char32_t nd_left,char32_t nd_right);
-}Node;
+int sha256(const unsigned char *block,size_t data_size, unsigned char *hash,int hash_length);
 
 void bytes_to_hex(const unsigned char *bin, unsigned int bin_len, char *hex);

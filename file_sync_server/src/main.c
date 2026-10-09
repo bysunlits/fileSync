@@ -1,9 +1,9 @@
 //
 // Created by bysunlits on 2026/9/6.
 //
+#include <logger.h>
 #include <stdio.h>
 #include <utils/log_sinker.h>
-#include "logger/logger.h"
 
 #include "read_data/acpt_data.h"
 /*
@@ -11,12 +11,14 @@
 
 ## 1. 定位与范围
 - 单源推送、多订阅者拉取的文件同步系统。
-- 服务端为 Linux，作为**可信中间人**：客户端经认证后即视为可信，**不处理恶意客户端**。
+- 服务端为
+Linux，作为**可信中间人**：客户端经认证后即视为可信，**不处理恶意客户端**。
 - 并发规模：**两位数以内**，不按大规模分发设计。
 
 ## 2. 拓扑与通信
 - `Client (Windows / Linux) ←TLS→ Nginx ←明文内部通道→ App Server (Linux)`
-- 基于 **TCP + TLS**，与 HTTP/HTTPS/WebSocket 无关；数据全程经过**用户态**，kTLS 可选。
+- 基于 **TCP + TLS**，与 HTTP/HTTPS/WebSocket 无关；数据全程经过**用户态**，kTLS
+可选。
 - **TLS 在 Nginx 终止**；Nginx 同时承担慢速连接防护（`proxy_timeout`）。
 
 ## 3. 注册与声明
@@ -30,17 +32,22 @@
 - `DATA` 帧 payload 结构固定为：
 
   ```
-  [ 帧头 (Len, Type=DATA) ] [ Chunk Index (4B) ] [ Offset (8B) ] [ Chunk Data Payload ]
+  [ 帧头 (Len, Type=DATA) ] [ Chunk Index (4B) ] [ Offset (8B) ] [ Chunk Data
+Payload ]
   ```
 
 - 分块方式**显式写入元数据**随流传递。
 
 ## 5. 分块与校验
 - **固定大小分块**，暂定 **1MB**；不做内容定义分块（CDC）。
-- **取消 diff 机制**：不做基于内容的文件切割与增量比对；插入/删除导致**全量重传**为已接受的 tradeoff。
+- **取消 diff
+机制**：不做基于内容的文件切割与增量比对；插入/删除导致**全量重传**为已接受的
+tradeoff。
 - **Hash 树仅用于包级校验与重传**，不用于增量比对。
-- 客户端在**检测到源文件变化后立即计算 hash 树**；同步时**先发 hash 树，再发数据**。
-- **消费端自行通过 hash 树校验**，不依赖"发送完成"消息（避免 ACK-of-ACK 通信死锁）。
+- 客户端在**检测到源文件变化后立即计算 hash 树**；同步时**先发 hash
+树，再发数据**。
+- **消费端自行通过 hash 树校验**，不依赖"发送完成"消息（避免 ACK-of-ACK
+通信死锁）。
 - 根 hash 来自客户端，认证通过即信任，**原样保存，永不从磁盘内容重算覆盖**。
 
 ## 6. 服务端发布与版本一致性
@@ -52,7 +59,8 @@
 
 ## 7. 客户端侧一致性
 - **Linux**：读取期间通过 **CoW 快照**保证内容固定。
-- **Windows**：**USN Journal** 检测变更；**机遇锁（oplock）**保护，检测到 break **立即放弃、稍后重试**；复制为**独占副本**（`FILE_SHARE_READ`）后再读/传。
+- **Windows**：**USN Journal** 检测变更；**机遇锁（oplock）**保护，检测到 break
+**立即放弃、稍后重试**；复制为**独占副本**（`FILE_SHARE_READ`）后再读/传。
 - 客户端**只读不写**；**不使用逻辑时钟**（避免并发冲突，目标为零 conflict）。
 
 ## 8. 同步触发与完成判定
@@ -66,7 +74,8 @@
 - 当前形态：非端到端加密（TLS 在 Nginx 终止）。
 */
 
-int main(void) {
+int main(void)
+{
 	log_set_level(LOG_LEVEL_DEBUG);
 
 	// 文件日志输出
@@ -78,8 +87,7 @@ int main(void) {
 	// if (log_file) {
 	// 	fclose(log_file);
 	// }
-	log_set_sink(console_sink,NULL);
-
+	log_set_sink(console_sink, NULL);
 
 	return 0;
 }

@@ -48,11 +48,19 @@ void log_dispatch(const LogEvent *event, const char *fmt, ...);
 #define LOG_MODULE "GLOBAL"
 #endif
 
+#ifndef LOG_LEVEL_OVERRIDE
+#define CURRENT_LOG_LEVEL LOG_LEVEL_OVERRIDE
+#else
+extern LogLevel g_current_log_level;
+#define CURRENT_LOG_LEVEL g_current_log_level
+#endif
+
+
 // 核心宏：捕获元数据并触发派发
 // 提示：通过宏可以在编译期消除低于某个级别的日志以提升性能
 #define LOG_BASE(level_enum, ...) do { \
-    extern LogLevel g_current_log_level; \
-    if ((level_enum) >= g_current_log_level) { \
+    extern LogLevel CURRENT_LOG_LEVEL; \
+    if ((level_enum) >= CURRENT_LOG_LEVEL) { \
         time_t t = time(NULL); \
         struct tm tm_info; \
         localtime_r(&t, &tm_info); \

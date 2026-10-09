@@ -6,11 +6,10 @@
 #define SERVER_ERR_H
 #include "hld_err.h"
 
-#endif //SERVER_ERR_H
-typedef struct ERR_INFO
-{
+#endif // SERVER_ERR_H
+typedef struct ERR_INFO {
 	int ERR_CODE;
 	char *MESSAGE;
-}ERR_INFO;
+} ERR_INFO;
 
-int hld_err(ERR_INFO **ERR_PTR,const char *message,const int err_code);
+int hld_err(ERR_INFO **ERR_PTR, const char *message, const int err_code);
