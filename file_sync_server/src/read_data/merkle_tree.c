@@ -6,44 +6,72 @@
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <string.h>
+#include <stdlib.h>
+
 
 #define BLOCK_SZ 32768U
 #define SHA256_DIGEST_LENGTH 32
 
 typedef struct Node {
-	unsigned char hash[32];
+	unsigned char hash[SHA256_DIGEST_LENGTH];
 	struct Node *left;
 	struct Node *right;
 } Node;
 
 void build_tree(MerkleTree *self, unsigned char *data, uint32_t data_size)
 {
-	int current_level=0;
-	int member=0;
 	unsigned char *offset=data;
-	uint32_t leaf_node_sum=data_size/BLOCK_SZ;
-	if (data_size%BLOCK_SZ>0)leaf_node_sum++;
-	Node *nodes=(Node *)malloc(sizeof(Node)*2*leaf_node_sum);
-
-	while (member<2) {
-		if (member==0) {
-			for (uint32_t i = 0; i < data_size; i +=BLOCK_SZ) {
-				int block_sz =
-					BLOCK_SZ < (data_size - 1) ? BLOCK_SZ : (data_size - i);
-				node_default(offset, block_sz);
-				offset+=block_sz;
-				member++;
-				current_level++;
-			}
-		}
-		for ()
-
-
+	uint32_t leaves_sum=data_size/BLOCK_SZ;
+	if (data_size%BLOCK_SZ>0)leaves_sum++;
+	unsigned char leaf_hashes[leaves_sum][SHA256_DIGEST_LENGTH];
+	for (uint32_t i = 0; i < leaves_sum; i +=1) {
+			int block_sz =
+				BLOCK_SZ < (data_size - 1) ? BLOCK_SZ : (data_size - i);
+			node_default(offset, block_sz,&leaf_hashes[i][0]);
+			offset+=block_sz;
 	}
-
-
+	build_merkle_tree(leaf_hashes[0][0],leaves_sum);
 }
 
+
+Node* build_merkle_tree(char leaf_hashes[][SHA256_DIGEST_LENGTH], int n) {
+	if (n <= 0) return NULL;
+
+	Node *nodes = (Node *)malloc(sizeof(Node) * (2 * n));
+
+	for (int i = 0; i < n; i++) {
+		memcpy(nodes[i].hash, leaf_hashes[i], SHA256_DIGEST_LENGTH);
+		nodes[i].left = NULL;
+		nodes[i].right = NULL;
+	}
+
+	int current_layer_start = 0; // 当前层在数组里的起始下标
+	int current_count = n;       // 当前层的节点数
+	int next_free_idx = n;       // 下一个新父节点在数组里存放的位置
+
+	while (current_count > 1) {
+		int next_count = 0;
+
+		for (int i = 0; i < current_count; i += 2) {
+			Node *left = &nodes[current_layer_start + i];
+			Node *right = (i + 1 < current_count) ? &nodes[current_layer_start + i + 1] : left;
+
+			Node *parent = &nodes[next_free_idx++];
+			parent->left = left;
+			parent->right = right;
+			if(node_with_args( parent->hash, left->hash, right->hash)<0){
+				LOG_ERROR("Error while processing bind hash.");
+			}
+
+			next_count++;
+		}
+
+		current_layer_start += current_count;
+		current_count = next_count;
+	}
+
+	return &nodes[next_free_idx - 1];//root节点
+}
 // Node* deal_hash(Node *hash1,Node *hash2)
 // {
 // 	Node *node;
@@ -57,40 +85,43 @@ void build_tree(MerkleTree *self, unsigned char *data, uint32_t data_size)
 // 	return new_node;
 // }
 
-int node_default(unsigned char *block, size_t data_size)
+int node_default(unsigned char *block, size_t data_size,unsigned char *node)
 {
 	if (!block) return EINVAL;
-
-	Node *node = malloc(sizeof(Node));
-	if (!node)return EINVAL;
-
-	node->right=NULL;
-	node->left=NULL;
-
-	if (sha256(block, data_size,node->hash,SHA256_DIGEST_LENGTH) < 0) {
-		LOG_ERROR("Error occurred while doing sha256 hash.");
+	if (sha256(block, data_size,node,SHA256_DIGEST_LENGTH) < 0) {
+		return -1;
 	}
 	return 0;
 }
 
-Node* node_with_args(unsigned char *nd_left,unsigned char *nd_right)
-{
-	if (!nd_left||!nd_right)return NULL;
+// Node* node_with_args(unsigned char *nd_left,unsigned char *nd_right)
+// {
+// 	if (!nd_left||!nd_right)return NULL;
 
-	Node *node = malloc(sizeof(Node));
-	if (!node)return NULL;
+// 	Node *node = malloc(sizeof(Node));
+// 	if (!node)return NULL;
 
-	node->right=NULL;
-	node->left=NULL;
+// 	node->right=NULL;
+// 	node->left=NULL;
 
+// 	unsigned char binded[SHA256_DIGEST_LENGTH*2];
+// 	memcpy(binded,nd_left,SHA256_DIGEST_LENGTH);
+// 	memcpy(binded+SHA256_DIGEST_LENGTH,nd_right,SHA256_DIGEST_LENGTH);
+
+// 	if (sha256(binded,sizeof(binded),node->hash,SHA256_DIGEST_LENGTH) < 0) {
+// 		LOG_ERROR("Error occurred while doing sha256 hash.");
+// 	}
+// 	return node;
+// }
+
+int node_with_args(unsigned char *parents, char *left,unsigned char *right){
 	unsigned char binded[SHA256_DIGEST_LENGTH*2];
-	memcpy(binded,nd_left,SHA256_DIGEST_LENGTH);
-	memcpy(binded+SHA256_DIGEST_LENGTH,nd_right,SHA256_DIGEST_LENGTH);
-
-	if (sha256(binded,sizeof(binded),node->hash,SHA256_DIGEST_LENGTH) < 0) {
-		LOG_ERROR("Error occurred while doing sha256 hash.");
+	memcpy(binded,left,SHA256_DIGEST_LENGTH);
+	memcpy(binded+SHA256_DIGEST_LENGTH,right,SHA256_DIGEST_LENGTH);
+	if (sha256(binded,sizeof(binded),parents,SHA256_DIGEST_LENGTH) < 0) {
+		return -1;
 	}
-	return node;
+	return 0;
 }
 
 int sha256(const unsigned char *block,size_t data_size, unsigned char *hash,int hash_length)

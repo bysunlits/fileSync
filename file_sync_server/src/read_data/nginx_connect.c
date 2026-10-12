@@ -30,6 +30,7 @@ int sock_read()
 	}
 
 	unlink(SOCKET_PATH);
+	//Used to clean old Unix socket
 
 	// int opt=1;
 	// setsockopt(server_fd,SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
