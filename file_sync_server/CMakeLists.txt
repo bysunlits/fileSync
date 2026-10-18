@@ -11,10 +11,14 @@ add_executable(file_sync_server
         src/read_data/acpt_data.h
         src/base/hld_err.c
         src/base/hld_err.h
-        libs/logger/logger.c
+        src/base/logger.c
         libs/logger/logger.h
         src/utils/log_sinker.c
         src/utils/log_sinker.h
+        src/read_data/sock_connect.c
+        src/read_data/sock_connect.h
+        include/epoll/epoll.c
+        include/epoll/epoll.h
 )
 
 target_include_directories(file_sync_server PRIVATE

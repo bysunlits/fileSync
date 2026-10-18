@@ -1,6 +1,13 @@
 //
 // Created by sunlit on 2026/9/29.
 //
+
+#include <logger.h>
+#include "sock_connect.h"
+#include <sys/un.h>
+
+#define BUFFER_SIZE 4096
+
 enum INFOMESSAGE { START_MSG, IN_PROGRESS_MSG, END_MSG };
 typedef enum {
 	ACPT_SUCCESS,
@@ -13,11 +20,10 @@ ACCEPT_DATA_RESULT accept_data();
 
 typedef enum { HLD_SUCCESS } HLD_HEAD_RET;
 
+
 HLD_HEAD_RET hdl_head();
 
-MerkleTree metainfo_deal();
-
-void recv_chunk(MerkleTree hash_tree);
+int metainfo_deal();
 
 typedef enum { FAIL_RECV, ERR_PKG } RECV_RESULT;
 
@@ -25,8 +31,15 @@ RECV_RESULT rd_to_buffer();
 
 ACCEPT_DATA_RESULT acpt_data()
 {
+	struct sockaddr_un server_addr;
+	create_connection(server_addr);
+	char buffer[BUFFER_SIZE];
+
+
+
 	MerkleTree hash_tree = metainfo_deal();
 	recv_chunk(hash_tree);
+
 }
 
 void recv_chunk(MerkleTree hash_tree)

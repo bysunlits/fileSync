@@ -54,7 +54,7 @@ int sock_read()
 
 	// server_addr.sin_port=htons(PORT);//hton is host to network
 	if (bind(server_fd, (struct sockaddr *)&server_addr,
-		 client_len)) // bind a socket file descriptor to a local net
+		 sizeof(server_addr))) // bind a socket file descriptor to a local net
 			      // address.
 	{
 		perror("Bind failed");
@@ -74,7 +74,7 @@ int sock_read()
 	       (int)sizeof(server_addr.sun_path), server_addr.sun_path);
 
 	while (1) {
-		client_fd = accept(server_fd, (struct sockaddr *)&client_addr,
+		client_fd = accept(server_fd, (struct sockaddr *)&client_addr,//addr is ouput parameter, used be a pointeer to the client address.
 				   &client_len);
 		if (client_fd < 0) {
 			perror("Accept failed");

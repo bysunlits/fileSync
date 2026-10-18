@@ -21,7 +21,7 @@ typedef struct Node {
 void build_tree(MerkleTree *self, unsigned char *data, uint32_t data_size)
 {
 	unsigned char *offset=data;
-	uint32_t leaves_sum=data_size/BLOCK_SZ;
+	int leaves_sum=(int)data_size/BLOCK_SZ;
 	if (data_size%BLOCK_SZ>0)leaves_sum++;
 	unsigned char leaf_hashes[leaves_sum][SHA256_DIGEST_LENGTH];
 	for (uint32_t i = 0; i < leaves_sum; i +=1) {
@@ -30,11 +30,11 @@ void build_tree(MerkleTree *self, unsigned char *data, uint32_t data_size)
 			node_default(offset, block_sz,&leaf_hashes[i][0]);
 			offset+=block_sz;
 	}
-	build_merkle_tree(leaf_hashes[0][0],leaves_sum);
+	build_merkle_tree(leaf_hashes,leaves_sum);
 }
 
 
-Node* build_merkle_tree(char leaf_hashes[][SHA256_DIGEST_LENGTH], int n) {
+Node* build_merkle_tree(unsigned char leaf_hashes[][SHA256_DIGEST_LENGTH], int n) {
 	if (n <= 0) return NULL;
 
 	Node *nodes = (Node *)malloc(sizeof(Node) * (2 * n));
@@ -72,18 +72,6 @@ Node* build_merkle_tree(char leaf_hashes[][SHA256_DIGEST_LENGTH], int n) {
 
 	return &nodes[next_free_idx - 1];//root节点
 }
-// Node* deal_hash(Node *hash1,Node *hash2)
-// {
-// 	Node *node;
-// 	if (hash1->right!=NULL) {
-// 		node=deal_hash(hash1->right,hash2);
-// 	}else {
-// 		node=node_with_args(hash1->hash,hash2->hash);
-// 		return node;
-// 	}
-// 	Node *new_node=node_with_args(hash1->hash,node->hash);
-// 	return new_node;
-// }
 
 int node_default(unsigned char *block, size_t data_size,unsigned char *node)
 {
@@ -94,27 +82,7 @@ int node_default(unsigned char *block, size_t data_size,unsigned char *node)
 	return 0;
 }
 
-// Node* node_with_args(unsigned char *nd_left,unsigned char *nd_right)
-// {
-// 	if (!nd_left||!nd_right)return NULL;
-
-// 	Node *node = malloc(sizeof(Node));
-// 	if (!node)return NULL;
-
-// 	node->right=NULL;
-// 	node->left=NULL;
-
-// 	unsigned char binded[SHA256_DIGEST_LENGTH*2];
-// 	memcpy(binded,nd_left,SHA256_DIGEST_LENGTH);
-// 	memcpy(binded+SHA256_DIGEST_LENGTH,nd_right,SHA256_DIGEST_LENGTH);
-
-// 	if (sha256(binded,sizeof(binded),node->hash,SHA256_DIGEST_LENGTH) < 0) {
-// 		LOG_ERROR("Error occurred while doing sha256 hash.");
-// 	}
-// 	return node;
-// }
-
-int node_with_args(unsigned char *parents, char *left,unsigned char *right){
+int node_with_args(unsigned char *parents,unsigned char *left,unsigned char *right){
 	unsigned char binded[SHA256_DIGEST_LENGTH*2];
 	memcpy(binded,left,SHA256_DIGEST_LENGTH);
 	memcpy(binded+SHA256_DIGEST_LENGTH,right,SHA256_DIGEST_LENGTH);
