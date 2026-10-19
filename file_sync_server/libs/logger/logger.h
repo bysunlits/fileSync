@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <time.h>
 
-// 日志级别
 typedef enum {
     LOG_LEVEL_TRACE = 0,
     LOG_LEVEL_DEBUG,
