@@ -84,46 +84,56 @@ void thread_init() {
         pthread_create(&tid[i], NULL, worker, NULL);
     }
 
-    struct sockaddr_un server_addr;
+    struct sockaddr_un listen_addr;
+    socklen_t listen_len = sizeof(listen_addr);
     int listen_fd;
     memset(&listen_fd, '\0', sizeof(listen_fd));
-    if (sizeof(UNIX_SOCKET) < sizeof(server_addr.sun_path)) {
-        strncpy(server_addr.sun_path, UNIX_SOCKET, sizeof(server_addr.sun_path) - 1);
+    if (sizeof(UNIX_SOCKET) < sizeof(listen_addr.sun_path)) {
+        strncpy(listen_addr.sun_path, UNIX_SOCKET, sizeof(listen_addr.sun_path) - 1);
     }
-    server_addr.sun_family = AF_UNIX;
+    listen_addr.sun_family = AF_UNIX;
 
 //    int opt = 1;
 //    setsockopt(listen_fd, SOL_SOCKET,SO_REUSEADDR,&opt,sizeof (opt));//Unix socket needn't prevent the TCP/IP socket reuse;
     unlink(UNIX_SOCKET);
 
-    if(bind(listen_fd,(struct sockaddr *)&server_addr,sizeof (server_addr))<0){
+    if (bind(listen_fd, (struct sockaddr *) &listen_addr, sizeof(listen_addr)) < 0) {
         LOG_DEBUG("Bind Failed.");
     }
 
-    int baklog=1024;
-    listen(listen_fd,baklog);
+    int baklog = 1024;
+    listen(listen_fd, baklog);
 
-    g_epoll_fd= epoll_create1(EPOLL_CLOEXEC);//EPOLL_CLOEXEC 是epoll_create1() 的 flags 参数，当前 Linux 只支持这一个合法取值（可传 0）。它的作用等价于在返回的 epoll fd 上设置了 FD_CLOEXEC 标志，即：当进程调用 execve() 家族函数成功替换掉当前进程映像时，这个 fd 会被内核自动关闭，不会泄漏给新程序。注意它只在 exec 成功时生效；fork() 之后子进程里 fd 仍然是打开的（子进程可自己 close）
+    g_epoll_fd = epoll_create1(
+            EPOLL_CLOEXEC);//EPOLL_CLOEXEC 是epoll_create1() 的 flags 参数，当前 Linux 只支持这一个合法取值（可传 0）。它的作用等价于在返回的 epoll fd 上设置了 FD_CLOEXEC 标志，即：当进程调用 execve() 家族函数成功替换掉当前进程映像时，这个 fd 会被内核自动关闭，不会泄漏给新程序。注意它只在 exec 成功时生效；fork() 之后子进程里 fd 仍然是打开的（子进程可自己 close）
     struct epoll_event ev;
-    ev.data.fd=listen_fd;
-    ev.events=EPOLLIN;
-    epoll_ctl(g_epoll_fd,EPOLL_CTL_ADD,ev.data.fd,&ev);
+    ev.data.fd = listen_fd;
+    ev.events = EPOLLIN;
+    epoll_ctl(g_epoll_fd, EPOLL_CTL_ADD, ev.data.fd, &ev);
 
-    while(1){
-        int nready=epoll_wait(g_epoll_fd,&ev,MAX_EVENTS,-1);//timeout==-1 表示无限期阻塞直到有线程就绪
+    while (1) {
+        int nready = epoll_wait(g_epoll_fd, &ev, MAX_EVENTS, -1);//timeout==-1 表示无限期阻塞直到有线程就绪
 
-        if(nready>0){
+        if (nready > 0) {
+            for (int i = 0; i < nready; i++) {
+                int cur_fd = ev.data.fd;
 
-        } else if(nready==0){
+                if (cur_fd == listen_fd) {
+                    int client_fd = accept(listen_fd, (struct sockaddr *) &listen_addr,&listen_len);
+                    
 
-        } else{
-            if(errno==EINTR){
+                } else {
+
+                }
+            }
+        } else if (nready == 0) {
+            continue;
+        } else {
+            if (errno == EINTR) {
                 continue;
             }
-            int saved=errno;
-            if(saved==EBADF){
-                LOG_ERROR("epfd is invalid.")
-            } else if()
+            int saved = errno;
+            LOG_ERROR("Unknown error,errno is %d", saved);
         }
     }
 
