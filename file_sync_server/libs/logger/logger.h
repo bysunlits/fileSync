@@ -16,33 +16,41 @@
 
 // 日志级别
 typedef enum {
-	LOG_LEVEL_TRACE = 0,
-	LOG_LEVEL_DEBUG,
-	LOG_LEVEL_INFO,
-	LOG_LEVEL_WARN,
-	LOG_LEVEL_ERROR,
-	LOG_LEVEL_FATAL,
-	LOG_LEVEL_NONE // 用于关闭所有日志
+    LOG_LEVEL_TRACE = 0,
+    LOG_LEVEL_DEBUG,
+    LOG_LEVEL_INFO,
+    LOG_LEVEL_WARN,
+    LOG_LEVEL_ERROR,
+    LOG_LEVEL_FATAL,
+    LOG_LEVEL_NONE // 用于关闭所有日志
 } LogLevel;
 
 // 传递给 Sink (输出目标) 的元数据结构体
 typedef struct {
-	LogLevel level;
-	const char *module;
-	const char *file;
-	const char *func;
-	int line;
-	struct tm timestamp;
+    LogLevel level;
+    const char *module;
+    const char *file;
+    const char *func;
+    int line;
+    struct tm timestamp;
 } LogEvent;
 
 // 日志输出目标的函数指针 (Sink 回调)
 typedef void (*LogSinkFn)(const LogEvent *event, const char *fmt, va_list args,
-			  void *user_data);
+                          void *user_data);
 
 // 初始化与配置 API
 void log_set_level(LogLevel level);
+
 void log_set_sink(LogSinkFn sink, void *user_data);
-void log_dispatch(const LogEvent *event, const char *fmt, ...);
+
+void log_dispatch(const LogEvent *event, const char *fmt, ...)
+__attribute__((format(printf, 2, 3)));
+
+/* 给 sink 用的格式化 helper：返回 malloc 的字符串，调用者 free()；
+ * 失败返回 NULL。内部已正确处理 va_copy，sink 直接调即可。 */
+char *log_vformat(const char *fmt, va_list args);
+
 
 // 默认模块名
 #ifndef LOG_MODULE
@@ -59,21 +67,21 @@ extern LogLevel g_current_log_level;
 // 捕获元数据并触发派发
 // 在编译期消除低于某个级别的日志以提升性能
 #define LOG_BASE(level_enum, ...)                                              \
-	do {                                                                   \
-		extern LogLevel CURRENT_LOG_LEVEL;                             \
-		if ((level_enum) >= CURRENT_LOG_LEVEL) {                       \
-			time_t t = time(NULL);                                 \
-			struct tm tm_info;                                     \
-			localtime_r(&t, &tm_info);                             \
-			LogEvent event = {.level = level_enum,                 \
-					  .module = LOG_MODULE,                \
-					  .file = __FILE__,                    \
-					  .func = __func__,                    \
-					  .line = __LINE__,                    \
-					  .timestamp = tm_info};               \
-			log_dispatch(&event, __VA_ARGS__);                     \
-		}                                                              \
-	} while (0)
+    do {                                                                   \
+        extern LogLevel CURRENT_LOG_LEVEL;                             \
+        if ((level_enum) >= CURRENT_LOG_LEVEL) {                       \
+            time_t t = time(NULL);                                 \
+            struct tm tm_info;                                     \
+            localtime_r(&t, &tm_info);                             \
+            LogEvent event = {.level = level_enum,                 \
+                      .module = LOG_MODULE,                \
+                      .file = __FILE__,                    \
+                      .func = __func__,                    \
+                      .line = __LINE__,                    \
+                      .timestamp = tm_info};               \
+            log_dispatch(&event, __VA_ARGS__);                     \
+        }                                                              \
+    } while (0)
 
 // 供业务代码调用的接口
 #define LOG_TRACE(...) LOG_BASE(LOG_LEVEL_TRACE, __VA_ARGS__)

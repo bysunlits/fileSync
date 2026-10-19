@@ -2,7 +2,6 @@
 // Created by wx on 2026/10/16.
 //
 #pragma once
-#include <../../include/epoll/global.h>
 
 #ifndef FILE_SYNC_SERVER_EPOLL_H
 #define FILE_SYNC_SERVER_EPOLL_H

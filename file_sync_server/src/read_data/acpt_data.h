@@ -5,6 +5,6 @@
 #ifndef FILESYNC_ACPT_DATA_H
 #define FILESYNC_ACPT_DATA_H
 
-class acpt_data {};
+int acpt_data {};
 
 #endif // FILESYNC_ACPT_DATA_H

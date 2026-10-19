@@ -1,6 +1,8 @@
 #pragma once
 
 
+#include <sys/un.h>
+
 typedef struct recv_client {
     int fd;
     struct sockaddr_un addr;
